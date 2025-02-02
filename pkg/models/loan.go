@@ -8,6 +8,17 @@ import (
 	"gorm.io/gorm"
 )
 
+// LoanStatus represents the different states a loan can be in
+type LoanStatus string
+
+// Predefined loan status constants
+const (
+	LoanStatusProposed  LoanStatus = "proposed"
+	LoanStatusInvested  LoanStatus = "invested"
+	LoanStatusApproved  LoanStatus = "approved"
+	LoanStatusDisbursed LoanStatus = "disbursed"
+)
+
 // Loan represents a loan application in the system
 type Loan struct {
 	ID                        uint         `gorm:"not null;primary_key" json:"id"`
@@ -15,20 +26,20 @@ type Loan struct {
 	PrincipalAmount           float64      `gorm:"not null" json:"principal_amount"`
 	Rate                      float64      `gorm:"not null;" json:"rate"`
 	RemainingInvestmentAmount float64      `gorm:"not null;default:0" json:"remaining_investment_amount"`
-	State                     string       `gorm:"not null;default:'proposed'" json:"state"`
+	State                     LoanStatus   `gorm:"not null;default:'proposed'" json:"state"`
 	Investments               []Investment `gorm:"foreignKey:LoanID" json:"investments,omitempty"`
 	ApprovedAt                *time.Time   `gorm:"default:null" json:"approved_at"`
 	ApprovedBy                *uint        `gorm:"default:null" json:"approved_by"`
 	VisitProof                *string      `gorm:"default:null" json:"visit_proof"`
 	DisbursedAt               *time.Time   `gorm:"default:null" json:"disbursed_at"`
-	DisbursedBy               *string      `gorm:"default:null" json:"disbursed_by"`
+	DisbursedBy               *uint        `gorm:"default:null" json:"disbursed_by"`
 	CreatedAt                 time.Time    `gorm:"not null;autoCreateTime" json:"created_at"`
 	UpdatedAt                 time.Time    `gorm:"not null;autoUpdateTime" json:"updated_at"`
 }
 
 // Set default state to proposed before creating loan
 func (l *Loan) SetStateToProposed() {
-	l.State = "proposed"
+	l.State = LoanStatusProposed
 }
 
 // Set default remaining investment amount to principal amount
@@ -55,18 +66,16 @@ func (l *Loan) UpdateRemainingInvestmentAmount() {
 
 // Set status to invested if remaining investment amount is 0
 func (l *Loan) SetStatusToInvested() {
-	if l.RemainingInvestmentAmount == 0 {
-		l.State = "invested"
-	}
+	l.State = LoanStatusInvested
 }
 
 // Validate loan state before saving
 func (l *Loan) BeforeSave(tx *gorm.DB) error {
-	validStates := map[string]bool{
-		"proposed":  true,
-		"approved":  true,
-		"invested":  true,
-		"disbursed": true,
+	validStates := map[LoanStatus]bool{
+		LoanStatusProposed:  true,
+		LoanStatusApproved:  true,
+		LoanStatusInvested:  true,
+		LoanStatusDisbursed: true,
 	}
 
 	if !validStates[l.State] {
@@ -75,6 +84,11 @@ func (l *Loan) BeforeSave(tx *gorm.DB) error {
 			l.State)
 	}
 	return nil
+}
+
+// Reduce Remaining Investment Amount
+func (l *Loan) ReduceRemainingInvestmentAmount(amount float64) {
+	l.RemainingInvestmentAmount -= amount
 }
 
 // BeforeCreate is a GORM hook that runs before creating a new loan

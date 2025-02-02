@@ -1,4 +1,4 @@
-package repositories
+package repositories_test
 
 import (
 	"fmt"
@@ -8,10 +8,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 
 	"github.com/amartha/LoanService/pkg/models"
 	"github.com/amartha/LoanService/pkg/repositories"
-	"github.com/amartha/LoanService/pkg/tests/testutils"
+	testutils "github.com/amartha/LoanService/pkg/tests/testutils"
 )
 
 func TestLoanRepository_Create(t *testing.T) {
@@ -36,14 +37,14 @@ func TestLoanRepository_Create(t *testing.T) {
 	// Assertions
 	assert.NoError(t, err, "Creating a loan should not return an error")
 	assert.NotZero(t, testLoan.ID, "Loan ID should be set after creation")
-	assert.Equal(t, "proposed", testLoan.State, "Loan status should be 'proposed'")
+	assert.Equal(t, models.LoanStatusProposed, testLoan.State, "Loan status should be 'proposed'")
 
 	// Verify loan was actually saved in the database
 	var savedLoan models.Loan
 	result := db.First(&savedLoan, testLoan.ID)
 	assert.NoError(t, result.Error, "Should be able to retrieve the saved loan")
 	assert.Equal(t, testLoan.BorrowerIDNumber, savedLoan.BorrowerIDNumber, "Saved loan should match the original loan's borrower ID")
-	assert.Equal(t, "proposed", savedLoan.State, "Saved loan should have 'proposed' status")
+	assert.Equal(t, models.LoanStatusProposed, savedLoan.State, "Saved loan should have 'proposed' status")
 }
 
 func TestLoanRepository_CreateWithExistingStatus(t *testing.T) {
@@ -60,7 +61,7 @@ func TestLoanRepository_CreateWithExistingStatus(t *testing.T) {
 		BorrowerIDNumber: "12345",
 		PrincipalAmount:  10000,
 		Rate:             5.5,
-		State:            "proposed", // Explicitly set to a valid state
+		State:            models.LoanStatusProposed, // Explicitly set to a valid state
 	}
 
 	// Execute the Create method
@@ -69,13 +70,13 @@ func TestLoanRepository_CreateWithExistingStatus(t *testing.T) {
 	// Assertions
 	assert.NoError(t, err, "Creating a loan should not return an error")
 	assert.NotZero(t, testLoan.ID, "Loan ID should be set after creation")
-	assert.Equal(t, "proposed", testLoan.State, "Loan status should be 'proposed'")
+	assert.Equal(t, models.LoanStatusProposed, testLoan.State, "Loan status should be 'proposed'")
 
 	// Verify loan was actually saved in the database
 	var savedLoan models.Loan
 	result := db.First(&savedLoan, testLoan.ID)
 	assert.NoError(t, result.Error, "Should be able to retrieve the saved loan")
-	assert.Equal(t, "proposed", savedLoan.State, "Saved loan should have 'proposed' status")
+	assert.Equal(t, models.LoanStatusProposed, savedLoan.State, "Saved loan should have 'proposed' status")
 }
 
 func TestLoanRepository_CreateWithDifferentStatus(t *testing.T) {
@@ -94,25 +95,25 @@ func TestLoanRepository_CreateWithDifferentStatus(t *testing.T) {
 			BorrowerIDNumber: "12345",
 			PrincipalAmount:  10000,
 			Rate:             5.5,
-			State:            "proposed",
+			State:            models.LoanStatusProposed,
 		},
 		{
 			BorrowerIDNumber: "12345",
 			PrincipalAmount:  10000,
 			Rate:             5.5,
-			State:            "approved",
+			State:            models.LoanStatusApproved,
 		},
 		{
 			BorrowerIDNumber: "12345",
 			PrincipalAmount:  10000,
 			Rate:             5.5,
-			State:            "invested",
+			State:            models.LoanStatusInvested,
 		},
 		{
 			BorrowerIDNumber: "12345",
 			PrincipalAmount:  10000,
 			Rate:             5.5,
-			State:            "disbursed",
+			State:            models.LoanStatusDisbursed,
 		},
 	}
 
@@ -176,8 +177,8 @@ func TestLoanRepository_CreateRemainingInvestmentAmount(t *testing.T) {
 				BorrowerIDNumber:          "12345",
 				PrincipalAmount:           tc.principalAmount,
 				Rate:                      5.5,
-				RemainingInvestmentAmount: 0,          // Intentionally set to 0
-				State:                     "proposed", // Explicitly set to a valid state
+				RemainingInvestmentAmount: 0,                         // Intentionally set to 0
+				State:                     models.LoanStatusProposed, // Explicitly set to a valid state
 			}
 
 			// Execute the Create method
@@ -222,7 +223,7 @@ func TestLoanRepository_CreateErrorScenarios(t *testing.T) {
 				BorrowerIDNumber: "", // Empty borrower ID
 				PrincipalAmount:  10000,
 				Rate:             5.5,
-				State:            "proposed", // Explicitly set to a valid state
+				State:            models.LoanStatusProposed, // Explicitly set to a valid state
 			},
 			expectError: true,
 			errorCheck: func(err error) bool {
@@ -235,7 +236,7 @@ func TestLoanRepository_CreateErrorScenarios(t *testing.T) {
 				BorrowerIDNumber: "12345",
 				PrincipalAmount:  -1000, // Negative principal amount
 				Rate:             5.5,
-				State:            "proposed", // Explicitly set to a valid state
+				State:            models.LoanStatusProposed, // Explicitly set to a valid state
 			},
 			expectError: true,
 			errorCheck: func(err error) bool {
@@ -247,8 +248,8 @@ func TestLoanRepository_CreateErrorScenarios(t *testing.T) {
 			loan: &models.Loan{
 				BorrowerIDNumber: "23456",
 				PrincipalAmount:  10000,
-				Rate:             -5.5,       // Negative rate
-				State:            "proposed", // Explicitly set to a valid state
+				Rate:             -5.5,                      // Negative rate
+				State:            models.LoanStatusProposed, // Explicitly set to a valid state
 			},
 			expectError: true,
 			errorCheck: func(err error) bool {
@@ -271,7 +272,7 @@ func TestLoanRepository_CreateErrorScenarios(t *testing.T) {
 				BorrowerIDNumber: "76743",
 				PrincipalAmount:  10000,
 				Rate:             5.5,
-				State:            "proposed", // Explicitly set to a valid state
+				State:            models.LoanStatusProposed, // Explicitly set to a valid state
 			},
 			expectError: false,
 		},
@@ -311,6 +312,34 @@ func TestLoanRepository_CreateErrorScenarios(t *testing.T) {
 	}
 }
 
+func prepareLoanForDisbursal(db *gorm.DB, loan *models.Loan) error {
+	// Simulate adding investments to the loan to prepare it for disbursement
+	investmentRepo := repositories.NewInvestmentRepository(db)
+
+	// Create multiple investments to fully fund the loan
+	investments := []*models.Investment{
+		{
+			LoanID:         loan.ID,
+			InvestorID:     129,
+			InvestedAmount: 500000,
+		},
+		{
+			LoanID:         loan.ID,
+			InvestorID:     130,
+			InvestedAmount: 500000,
+		},
+	}
+
+	for _, investment := range investments {
+		err := investmentRepo.Create(db, investment)
+		if err != nil {
+			return fmt.Errorf("failed to create investment for loan: %v", err)
+		}
+	}
+
+	return nil
+}
+
 func TestLoanRepository_SetStateToApproved(t *testing.T) {
 	// Setup test database
 	db := testutils.SetupTestDB(t)
@@ -325,7 +354,7 @@ func TestLoanRepository_SetStateToApproved(t *testing.T) {
 		loan := &models.Loan{
 			BorrowerIDNumber: "32123",
 			PrincipalAmount:  10000.0,
-			State:            "proposed",
+			State:            models.LoanStatusProposed,
 			Rate:             5.5,
 		}
 		err := loanRepo.Create(db, loan)
@@ -343,7 +372,7 @@ func TestLoanRepository_SetStateToApproved(t *testing.T) {
 		require.NoError(t, err)
 
 		// Assertions
-		assert.Equal(t, "approved", updatedLoan.State)
+		assert.Equal(t, models.LoanStatusApproved, updatedLoan.State)
 		assert.Equal(t, &approverID, updatedLoan.ApprovedBy)
 		assert.Equal(t, &visitProof, updatedLoan.VisitProof)
 		assert.NotNil(t, updatedLoan.ApprovedAt)
@@ -364,7 +393,7 @@ func TestLoanRepository_SetStateToApproved(t *testing.T) {
 		require.NoError(t, err)
 
 		// Set loan state to approved
-		loan.State = "approved"
+		loan.State = models.LoanStatusApproved
 		err = db.Save(loan).Error
 		require.NoError(t, err)
 
@@ -383,5 +412,73 @@ func TestLoanRepository_SetStateToApproved(t *testing.T) {
 		err := loanRepo.SetStateToApproved(db, 9999, approverID, visitProof)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "record not found")
+	})
+}
+
+func TestLoanRepository_SetStateToDisbursed(t *testing.T) {
+	// Setup test database
+	db := testutils.SetupTestDB(t)
+	defer testutils.TruncateTable(t, db)
+
+	// Create a loan repository
+	loanRepo := repositories.NewLoanRepository(db)
+
+	t.Run("Successfully set loan state to disbursed", func(t *testing.T) {
+		// Create an approved loan
+		loan := &models.Loan{
+			State:            models.LoanStatusApproved,
+			PrincipalAmount:  1000000,
+			BorrowerIDNumber: "98745",
+			Rate:             5.5,
+		}
+		err := loanRepo.Create(db, loan)
+		require.NoError(t, err)
+
+		err = prepareLoanForInvestment(db, loan)
+		require.NoError(t, err)
+
+		err = prepareLoanForDisbursal(db, loan)
+		require.NoError(t, err)
+
+		// Set state to disbursed
+		disbursedBy := uint(147)
+		err = loanRepo.SetStateToDisbursed(db, loan.ID, disbursedBy)
+		require.NoError(t, err)
+
+		// Retrieve the updated loan
+		updatedLoan, err := loanRepo.GetByID(db, loan.ID)
+		require.NoError(t, err)
+
+		// Assert loan state and details
+		assert.Equal(t, models.LoanStatusDisbursed, updatedLoan.State)
+		assert.Equal(t, &disbursedBy, updatedLoan.DisbursedBy)
+		assert.NotNil(t, updatedLoan.DisbursedAt)
+	})
+
+	t.Run("Error when loan is not in invested state", func(t *testing.T) {
+		// Create a loan in a different state
+		loan := &models.Loan{
+			State:            models.LoanStatusProposed,
+			PrincipalAmount:  1000000,
+			BorrowerIDNumber: "98745",
+			Rate:             5.5,
+		}
+		err := loanRepo.Create(db, loan)
+		require.NoError(t, err)
+
+		// Attempt to set state to disbursed
+		disbursedBy := uint(2)
+		err = loanRepo.SetStateToDisbursed(db, loan.ID, disbursedBy)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "is not in invested state")
+	})
+
+	t.Run("Error when loan does not exist", func(t *testing.T) {
+		// Try to set state for a non-existent loan
+		nonExistentLoanID := uint(9999)
+		disbursedBy := uint(3)
+		err := loanRepo.SetStateToDisbursed(db, nonExistentLoanID, disbursedBy)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to find loan")
 	})
 }
