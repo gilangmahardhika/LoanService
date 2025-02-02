@@ -9,48 +9,6 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestGenerateLink(t *testing.T) {
-	testCases := []struct {
-		name         string
-		initialState string
-		loanID       uint
-		expectedLink *string
-	}{
-		{
-			name:         "Approved loan generates correct link",
-			initialState: "approved",
-			loanID:       123,
-			expectedLink: stringPtr("https://example.com/loan/123"),
-		},
-		{
-			name:         "Non-approved loan does not generate link",
-			initialState: "proposed",
-			loanID:       456,
-			expectedLink: nil,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			loan := &models.Loan{
-				ID:    tc.loanID,
-				State: tc.initialState,
-			}
-
-			loan.GenerateLink()
-
-			if tc.expectedLink == nil {
-				assert.Nil(t, loan.AgreementLink, "Agreement link should be nil for non-approved loans")
-			} else {
-				assert.NotNil(t, loan.AgreementLink, "Agreement link should not be nil for approved loans")
-				if loan.AgreementLink != nil {
-					assert.Equal(t, *tc.expectedLink, *loan.AgreementLink, "Generated link should match expected link")
-				}
-			}
-		})
-	}
-}
-
 func TestBeforeSave(t *testing.T) {
 	testCases := []struct {
 		name          string

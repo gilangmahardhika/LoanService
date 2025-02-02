@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -16,7 +15,6 @@ type Loan struct {
 	PrincipalAmount           float64      `gorm:"not null" json:"principal_amount"`
 	Rate                      float64      `gorm:"not null;" json:"rate"`
 	RemainingInvestmentAmount float64      `gorm:"not null;default:0" json:"remaining_investment_amount"`
-	AgreementLink             *string      `gorm:"default:null" json:"agreement_link"`
 	State                     string       `gorm:"not null;default:'proposed'" json:"state"`
 	Investments               []Investment `gorm:"foreignKey:LoanID" json:"investments,omitempty"`
 	ApprovedAt                *time.Time   `gorm:"default:null" json:"approved_at"`
@@ -98,12 +96,4 @@ func (l *Loan) BeforeCreate(tx *gorm.DB) error {
 	}
 
 	return nil
-}
-
-// Generate link if load set to approved
-func (l *Loan) GenerateLink() {
-	if l.State == "approved" {
-		link := "https://example.com/loan/" + strconv.Itoa(int(l.ID))
-		l.AgreementLink = &link
-	}
 }

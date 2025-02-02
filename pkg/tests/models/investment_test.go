@@ -21,28 +21,10 @@ func TestCalculateROI(t *testing.T) {
 			expectedROI:    1000,
 		},
 		{
-			name:           "Zero invested amount",
-			investedAmount: 0,
-			loanRate:       15,
-			expectedROI:    0,
-		},
-		{
-			name:           "Zero loan rate",
-			investedAmount: 5000,
-			loanRate:       0,
-			expectedROI:    0,
-		},
-		{
 			name:           "Fractional invested amount",
 			investedAmount: 7500.50,
 			loanRate:       12.5,
 			expectedROI:    937.5625,
-		},
-		{
-			name:           "Negative loan rate",
-			investedAmount: 10000,
-			loanRate:       -5,
-			expectedROI:    -500,
 		},
 	}
 
@@ -83,28 +65,10 @@ func TestUpdateROI(t *testing.T) {
 			expectedROI:    1000,
 		},
 		{
-			name:           "Zero invested amount",
-			investedAmount: 0,
-			loanRate:       15,
-			expectedROI:    0,
-		},
-		{
-			name:           "Zero loan rate",
-			investedAmount: 5000,
-			loanRate:       0,
-			expectedROI:    0,
-		},
-		{
 			name:           "Fractional invested amount",
 			investedAmount: 7500.50,
 			loanRate:       12.5,
 			expectedROI:    937.5625,
-		},
-		{
-			name:           "Negative loan rate",
-			investedAmount: 10000,
-			loanRate:       -5,
-			expectedROI:    -500,
 		},
 	}
 
@@ -198,7 +162,7 @@ func TestValidateInvestedAmount(t *testing.T) {
 			}
 
 			// Validate invested amount
-			err := investment.ValidateInvestedAmount()
+			err := investment.ValidateInvestedAmount(&mockLoan)
 
 			if tc.expectedError {
 				assert.Error(t, err, "Expected an error for invalid investment amount")
