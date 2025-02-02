@@ -35,9 +35,9 @@ func main() {
 	})
 
 	// Middleware
-	app.Use(cors.New())     // Enable CORS
-	app.Use(logger.New())   // Logging middleware
-	app.Use(recover.New())  // Panic recovery middleware
+	app.Use(cors.New())    // Enable CORS
+	app.Use(logger.New())  // Logging middleware
+	app.Use(recover.New()) // Panic recovery middleware
 
 	// Root route
 	app.Get("/", func(c *fiber.Ctx) error {

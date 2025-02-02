@@ -32,7 +32,7 @@ func GetDatabaseURL(envVarName string, defaultURL string) string {
 // GetTestDatabaseURL is a convenience function for getting the test database URL
 func GetTestDatabaseURL() string {
 	return GetDatabaseURL(
-		"TEST_DATABASE_URL", 
+		"TEST_DATABASE_URL",
 		"postgres://postgres:postgres@localhost:5432/loanservice_test?sslmode=disable&TimeZone=UTC",
 	)
 }
