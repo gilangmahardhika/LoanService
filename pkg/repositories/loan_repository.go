@@ -22,6 +22,7 @@ func NewLoanRepository(db *gorm.DB) *loanRepository {
 
 type LoanRepository interface {
 	Create(db *gorm.DB, loan *models.Loan) error
+	SetStateToApproved(db *gorm.DB, id uint, approvedBy uint, visitProof string) error
 }
 
 // Create inserts a new loan into the database
