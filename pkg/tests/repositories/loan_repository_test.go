@@ -2,50 +2,23 @@ package repositories
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-
-	"strings"
 
 	"github.com/amartha/LoanService/pkg/models"
 	"github.com/amartha/LoanService/pkg/repositories"
 	"github.com/amartha/LoanService/pkg/tests/testutils"
 )
 
-func setupTestDB(t *testing.T) *gorm.DB {
-	// Get the test database URL
-	databaseURL := testutils.GetTestDatabaseURL()
-
-	// Open connection to PostgreSQL
-	db, err := gorm.Open(postgres.Open(databaseURL), &gorm.Config{})
-	require.NoError(t, err, "Failed to connect to test database: %v", err)
-
-	// Migrate the schema
-	err = db.AutoMigrate(&models.Loan{})
-	require.NoError(t, err, "Failed to migrate database schema")
-
-	// Truncate the table before each test
-	truncateLoansTable(t, db)
-
-	return db
-}
-
-func truncateLoansTable(t *testing.T, db *gorm.DB) {
-	// Truncate the loans table
-	err := db.Exec("TRUNCATE TABLE loans RESTART IDENTITY").Error
-	require.NoError(t, err, "Failed to truncate loans table")
-}
-
 func TestLoanRepository_Create(t *testing.T) {
 	// Setup in-memory test database
-	db := setupTestDB(t)
+	db := testutils.SetupTestDB(t)
 
-	defer truncateLoansTable(t, db)
+	defer testutils.TruncateTable(t, db)
 
 	// Create a repository instance
 	repo := repositories.NewLoanRepository(db)
@@ -75,9 +48,9 @@ func TestLoanRepository_Create(t *testing.T) {
 
 func TestLoanRepository_CreateWithExistingStatus(t *testing.T) {
 	// Setup in-memory test database
-	db := setupTestDB(t)
+	db := testutils.SetupTestDB(t)
 
-	defer truncateLoansTable(t, db)
+	defer testutils.TruncateTable(t, db)
 
 	// Create a repository instance
 	repo := repositories.NewLoanRepository(db)
@@ -107,10 +80,10 @@ func TestLoanRepository_CreateWithExistingStatus(t *testing.T) {
 
 func TestLoanRepository_CreateWithDifferentStatus(t *testing.T) {
 	// Setup in-memory test database
-	db := setupTestDB(t)
+	db := testutils.SetupTestDB(t)
 
 	// Truncate the table after each test
-	defer truncateLoansTable(t, db)
+	defer testutils.TruncateTable(t, db)
 
 	// Create a repository instance
 	repo := repositories.NewLoanRepository(db)
@@ -163,16 +136,16 @@ func TestLoanRepository_CreateWithDifferentStatus(t *testing.T) {
 			assert.Equal(t, tc.State, savedLoan.State, "Saved loan should have the original status")
 
 			// Truncate the table after each test
-			truncateLoansTable(t, db)
+			testutils.TruncateTable(t, db)
 		})
 	}
 }
 
 func TestLoanRepository_CreateRemainingInvestmentAmount(t *testing.T) {
 	// Setup in-memory test database
-	db := setupTestDB(t)
+	db := testutils.SetupTestDB(t)
 	// Truncate the table after each test
-	defer truncateLoansTable(t, db)
+	defer testutils.TruncateTable(t, db)
 	// Test cases with different principal amounts
 	testCases := []struct {
 		name            string
@@ -230,9 +203,9 @@ func TestLoanRepository_CreateRemainingInvestmentAmount(t *testing.T) {
 
 func TestLoanRepository_CreateErrorScenarios(t *testing.T) {
 	// Setup in-memory test database
-	db := setupTestDB(t)
+	db := testutils.SetupTestDB(t)
 	// Truncate the table after each test
-	defer truncateLoansTable(t, db)
+	defer testutils.TruncateTable(t, db)
 
 	// Create a repository instance
 	repo := repositories.NewLoanRepository(db)
@@ -340,8 +313,8 @@ func TestLoanRepository_CreateErrorScenarios(t *testing.T) {
 
 func TestLoanRepository_SetStateToApproved(t *testing.T) {
 	// Setup test database
-	db := setupTestDB(t)
-	defer truncateLoansTable(t, db)
+	db := testutils.SetupTestDB(t)
+	defer testutils.TruncateTable(t, db)
 
 	// Create a loan repository
 	loanRepo := repositories.NewLoanRepository(db)

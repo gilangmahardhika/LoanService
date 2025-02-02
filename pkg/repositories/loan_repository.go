@@ -23,7 +23,6 @@ func NewLoanRepository(db *gorm.DB) *loanRepository {
 type LoanRepository interface {
 	Create(db *gorm.DB, loan *models.Loan) error
 	SetStateToApproved(db *gorm.DB, id uint, approvedBy uint, visitProof string) error
-	Update(db *gorm.DB, loan *models.Loan) error
 }
 
 // Create inserts a new loan into the database
@@ -74,13 +73,5 @@ func (r *loanRepository) SetStateToApproved(db *gorm.DB, id uint, approvedBy uin
 		return err
 	}
 
-	return nil
-}
-
-// Update updates an existing loan in the database
-func (r *loanRepository) Update(db *gorm.DB, loan *models.Loan) error {
-	if err := db.Save(loan).Error; err != nil {
-		return err
-	}
 	return nil
 }
