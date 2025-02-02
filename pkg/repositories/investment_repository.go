@@ -35,7 +35,7 @@ func (r *investmentRepository) Create(db *gorm.DB, investment *models.Investment
 	}
 
 	// Can't invest on non approved loan
-	if loan.State != "approved" {
+	if loan.State != models.LoanStatusApproved {
 		return fmt.Errorf("loan with id %d is not in approved state", loan.ID)
 	}
 

@@ -59,12 +59,12 @@ func (r *loanRepository) SetStateToApproved(db *gorm.DB, id uint, approvedBy uin
 	}
 
 	// Return error if the loan state is not proposed
-	if loan.State != "proposed" {
+	if loan.State != models.LoanStatusProposed {
 		return fmt.Errorf("loan with id %d is not in proposed state", id)
 	}
 
 	// Update the loan state to approved
-	loan.State = "approved"
+	loan.State = models.LoanStatusApproved
 	loan.ApprovedBy = &approvedBy
 	loan.VisitProof = &visitProof
 	loan.ApprovedAt = &[]time.Time{time.Now()}[0]
