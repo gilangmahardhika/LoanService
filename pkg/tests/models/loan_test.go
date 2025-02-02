@@ -3,6 +3,8 @@ package models
 import (
 	"testing"
 
+	"github.com/amartha/LoanService/pkg/models"
+
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
@@ -30,7 +32,7 @@ func TestGenerateLink(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			loan := &Loan{
+			loan := &models.Loan{
 				ID:    tc.loanID,
 				State: tc.initialState,
 			}
@@ -95,7 +97,7 @@ func TestBeforeSave(t *testing.T) {
 			// Create a mock gorm.DB (nil is okay for this test since we're not using it)
 			var mockTx *gorm.DB
 
-			loan := &Loan{
+			loan := &models.Loan{
 				State: tc.state,
 			}
 
@@ -117,19 +119,19 @@ func TestCalculateRemainingInvestmentAmount(t *testing.T) {
 	testCases := []struct {
 		name              string
 		principalAmount   float64
-		investments       []Investment
+		investments       []models.Investment
 		expectedRemaining float64
 	}{
 		{
 			name:              "No investments",
 			principalAmount:   10000,
-			investments:       []Investment{},
+			investments:       []models.Investment{},
 			expectedRemaining: 10000,
 		},
 		{
 			name:            "Partial investment",
 			principalAmount: 10000,
-			investments: []Investment{
+			investments: []models.Investment{
 				{InvestedAmount: 3000},
 				{InvestedAmount: 2000},
 			},
@@ -138,7 +140,7 @@ func TestCalculateRemainingInvestmentAmount(t *testing.T) {
 		{
 			name:            "Full investment",
 			principalAmount: 10000,
-			investments: []Investment{
+			investments: []models.Investment{
 				{InvestedAmount: 5000},
 				{InvestedAmount: 5000},
 			},
@@ -147,7 +149,7 @@ func TestCalculateRemainingInvestmentAmount(t *testing.T) {
 		{
 			name:            "Over investment (edge case)",
 			principalAmount: 10000,
-			investments: []Investment{
+			investments: []models.Investment{
 				{InvestedAmount: 6000},
 				{InvestedAmount: 5000},
 			},
@@ -156,7 +158,7 @@ func TestCalculateRemainingInvestmentAmount(t *testing.T) {
 		{
 			name:            "Fractional investment",
 			principalAmount: 10000,
-			investments: []Investment{
+			investments: []models.Investment{
 				{InvestedAmount: 3333.33},
 				{InvestedAmount: 3333.33},
 			},
@@ -166,7 +168,7 @@ func TestCalculateRemainingInvestmentAmount(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			loan := Loan{
+			loan := models.Loan{
 				PrincipalAmount: tc.principalAmount,
 				Investments:     tc.investments,
 			}
@@ -184,19 +186,19 @@ func TestUpdateRemainingInvestmentAmount(t *testing.T) {
 	testCases := []struct {
 		name              string
 		principalAmount   float64
-		investments       []Investment
+		investments       []models.Investment
 		expectedRemaining float64
 	}{
 		{
 			name:              "No investments",
 			principalAmount:   10000,
-			investments:       []Investment{},
+			investments:       []models.Investment{},
 			expectedRemaining: 10000,
 		},
 		{
 			name:            "Partial investment",
 			principalAmount: 10000,
-			investments: []Investment{
+			investments: []models.Investment{
 				{InvestedAmount: 3000},
 				{InvestedAmount: 2000},
 			},
@@ -205,7 +207,7 @@ func TestUpdateRemainingInvestmentAmount(t *testing.T) {
 		{
 			name:            "Full investment",
 			principalAmount: 10000,
-			investments: []Investment{
+			investments: []models.Investment{
 				{InvestedAmount: 5000},
 				{InvestedAmount: 5000},
 			},
@@ -214,7 +216,7 @@ func TestUpdateRemainingInvestmentAmount(t *testing.T) {
 		{
 			name:            "Over investment (edge case)",
 			principalAmount: 10000,
-			investments: []Investment{
+			investments: []models.Investment{
 				{InvestedAmount: 6000},
 				{InvestedAmount: 5000},
 			},
@@ -224,7 +226,7 @@ func TestUpdateRemainingInvestmentAmount(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			loan := Loan{
+			loan := models.Loan{
 				PrincipalAmount:           tc.principalAmount,
 				Investments:               tc.investments,
 				RemainingInvestmentAmount: 0, // Initialize to ensure it's updated
@@ -281,7 +283,7 @@ func TestSetStatusToInvested(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			loan := Loan{
+			loan := models.Loan{
 				State:                     tc.initialState,
 				RemainingInvestmentAmount: tc.remainingInvestmentAmount,
 			}
@@ -316,7 +318,7 @@ func TestSetStateToProposed(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			loan := &Loan{
+			loan := &models.Loan{
 				State: tc.initialState,
 			}
 

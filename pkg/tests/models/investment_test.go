@@ -3,6 +3,7 @@ package models
 import (
 	"testing"
 
+	"github.com/amartha/LoanService/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -48,12 +49,12 @@ func TestCalculateROI(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Create a mock Loan with the specified rate
-			mockLoan := Loan{
+			mockLoan := models.Loan{
 				Rate: tc.loanRate,
 			}
 
 			// Create an Investment with the invested amount and mock loan
-			investment := Investment{
+			investment := models.Investment{
 				InvestedAmount: tc.investedAmount,
 				Loan:           mockLoan,
 			}
@@ -110,12 +111,12 @@ func TestUpdateROI(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Create a mock Loan with the specified rate
-			mockLoan := Loan{
+			mockLoan := models.Loan{
 				Rate: tc.loanRate,
 			}
 
 			// Create an Investment with the invested amount and mock loan
-			investment := &Investment{
+			investment := &models.Investment{
 				InvestedAmount: tc.investedAmount,
 				Loan:           mockLoan,
 				ROI:            0, // Initialize ROI to 0 to ensure it gets updated
@@ -183,15 +184,15 @@ func TestValidateInvestedAmount(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Create a mock Loan with the specified principal amount
-			mockLoan := Loan{
+			mockLoan := models.Loan{
 				PrincipalAmount: tc.principalAmount,
-				Investments: []Investment{
+				Investments: []models.Investment{
 					{InvestedAmount: tc.existingInvestment},
 				},
 			}
 
 			// Create an Investment with the invested amount and mock loan
-			investment := Investment{
+			investment := models.Investment{
 				InvestedAmount: tc.investedAmount,
 				Loan:           mockLoan,
 			}

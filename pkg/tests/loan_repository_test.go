@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/amartha/LoanService/pkg/models"
+	"github.com/amartha/LoanService/pkg/repositories"
 	"github.com/amartha/LoanService/pkg/testutils"
 )
 
@@ -44,7 +45,7 @@ func TestLoanRepository_Create(t *testing.T) {
 	db := setupTestDB(t)
 
 	// Create a repository instance
-	repo := NewLoanRepository(db)
+	repo := repositories.NewLoanRepository(db)
 
 	// Prepare a test loan
 	testLoan := &models.Loan{
@@ -77,7 +78,7 @@ func TestLoanRepository_CreateWithExistingStatus(t *testing.T) {
 	db := setupTestDB(t)
 
 	// Create a repository instance
-	repo := NewLoanRepository(db)
+	repo := repositories.NewLoanRepository(db)
 
 	// Prepare a test loan with an existing status
 	testLoan := &models.Loan{
@@ -110,7 +111,7 @@ func TestLoanRepository_CreateWithDifferentStatus(t *testing.T) {
 	db := setupTestDB(t)
 
 	// Create a repository instance
-	repo := NewLoanRepository(db)
+	repo := repositories.NewLoanRepository(db)
 
 	// Test cases with different initial statuses
 	testCases := []models.Loan{
@@ -191,7 +192,7 @@ func TestLoanRepository_CreateRemainingInvestmentAmount(t *testing.T) {
 			db := setupTestDB(t)
 
 			// Create a repository instance
-			repo := NewLoanRepository(db)
+			repo := repositories.NewLoanRepository(db)
 
 			// Prepare a test loan
 			testLoan := &models.Loan{
@@ -231,7 +232,7 @@ func TestLoanRepository_CreateErrorScenarios(t *testing.T) {
 	db := setupTestDB(t)
 
 	// Create a repository instance
-	repo := NewLoanRepository(db)
+	repo := repositories.NewLoanRepository(db)
 
 	testCases := []struct {
 		name        string
