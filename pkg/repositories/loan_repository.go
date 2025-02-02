@@ -23,8 +23,13 @@ type LoanRepository interface {
 
 // Create inserts a new loan into the database
 func (r *loanRepository) Create(db *gorm.DB, loan *models.Loan) error {
-	// Create a new loan using model struct
+	// Set state to proposed
 	loan.SetStateToProposed()
+
+	// Set remaining investment amount to principal amount
+	loan.SetDefaultRemainingInvestmentAmount()
+
+	// Create a new loan using model struct
 	if err := db.Create(&loan).Error; err != nil {
 		return err
 	}

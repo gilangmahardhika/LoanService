@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -30,6 +31,11 @@ type Loan struct {
 // Set default state to proposed before creating loan
 func (l *Loan) SetStateToProposed() {
 	l.State = "proposed"
+}
+
+// Set default remaining investment amount to principal amount
+func (l *Loan) SetDefaultRemainingInvestmentAmount() {
+	l.RemainingInvestmentAmount = l.PrincipalAmount
 }
 
 // function for calculation remaining investment amount
@@ -70,6 +76,27 @@ func (l *Loan) BeforeSave(tx *gorm.DB) error {
 			"invalid state '%s', must be one of: proposed, approved, invested, disbursed",
 			l.State)
 	}
+	return nil
+}
+
+// BeforeCreate is a GORM hook that runs before creating a new loan
+func (l *Loan) BeforeCreate(tx *gorm.DB) error {
+
+	// Validate Borrower ID Number
+	if strings.TrimSpace(l.BorrowerIDNumber) == "" {
+		return fmt.Errorf("BorrowerIDNumber cannot be empty")
+	}
+
+	// Validate Principal Amount
+	if l.PrincipalAmount <= 0 {
+		return fmt.Errorf("PrincipalAmount must be greater than zero")
+	}
+
+	// Validate Rate
+	if l.Rate <= 0 {
+		return fmt.Errorf("Rate cannot be negative")
+	}
+
 	return nil
 }
 

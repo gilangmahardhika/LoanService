@@ -9,22 +9,22 @@ import (
 
 func TestGenerateLink(t *testing.T) {
 	testCases := []struct {
-		name           string
-		initialState   string
-		loanID         uint
-		expectedLink   *string
+		name         string
+		initialState string
+		loanID       uint
+		expectedLink *string
 	}{
 		{
-			name:           "Approved loan generates correct link",
-			initialState:   "approved",
-			loanID:         123,
-			expectedLink:   stringPtr("https://example.com/loan/123"),
+			name:         "Approved loan generates correct link",
+			initialState: "approved",
+			loanID:       123,
+			expectedLink: stringPtr("https://example.com/loan/123"),
 		},
 		{
-			name:           "Non-approved loan does not generate link",
-			initialState:   "proposed",
-			loanID:         456,
-			expectedLink:   nil,
+			name:         "Non-approved loan does not generate link",
+			initialState: "proposed",
+			loanID:       456,
+			expectedLink: nil,
 		},
 	}
 
@@ -115,52 +115,52 @@ func TestBeforeSave(t *testing.T) {
 
 func TestCalculateRemainingInvestmentAmount(t *testing.T) {
 	testCases := []struct {
-		name               string
-		principalAmount    float64
+		name              string
+		principalAmount   float64
 		investments       []Investment
 		expectedRemaining float64
 	}{
 		{
-			name:               "No investments",
-			principalAmount:    10000,
-			investments:        []Investment{},
-			expectedRemaining:  10000,
+			name:              "No investments",
+			principalAmount:   10000,
+			investments:       []Investment{},
+			expectedRemaining: 10000,
 		},
 		{
-			name:               "Partial investment",
-			principalAmount:    10000,
+			name:            "Partial investment",
+			principalAmount: 10000,
 			investments: []Investment{
 				{InvestedAmount: 3000},
 				{InvestedAmount: 2000},
 			},
-			expectedRemaining:  5000,
+			expectedRemaining: 5000,
 		},
 		{
-			name:               "Full investment",
-			principalAmount:    10000,
+			name:            "Full investment",
+			principalAmount: 10000,
 			investments: []Investment{
 				{InvestedAmount: 5000},
 				{InvestedAmount: 5000},
 			},
-			expectedRemaining:  0,
+			expectedRemaining: 0,
 		},
 		{
-			name:               "Over investment (edge case)",
-			principalAmount:    10000,
+			name:            "Over investment (edge case)",
+			principalAmount: 10000,
 			investments: []Investment{
 				{InvestedAmount: 6000},
 				{InvestedAmount: 5000},
 			},
-			expectedRemaining:  -1000,
+			expectedRemaining: -1000,
 		},
 		{
-			name:               "Fractional investment",
-			principalAmount:    10000,
+			name:            "Fractional investment",
+			principalAmount: 10000,
 			investments: []Investment{
 				{InvestedAmount: 3333.33},
 				{InvestedAmount: 3333.33},
 			},
-			expectedRemaining:  3333.34, // Due to floating-point arithmetic
+			expectedRemaining: 3333.34, // Due to floating-point arithmetic
 		},
 	}
 
@@ -174,7 +174,7 @@ func TestCalculateRemainingInvestmentAmount(t *testing.T) {
 			remaining := loan.CalculateRemainingInvestmentAmount()
 
 			// Use approximate comparison for floating-point values
-			assert.InDelta(t, tc.expectedRemaining, remaining, 0.01, 
+			assert.InDelta(t, tc.expectedRemaining, remaining, 0.01,
 				"Remaining investment amount should match expected value")
 		})
 	}
@@ -182,43 +182,43 @@ func TestCalculateRemainingInvestmentAmount(t *testing.T) {
 
 func TestUpdateRemainingInvestmentAmount(t *testing.T) {
 	testCases := []struct {
-		name               string
-		principalAmount    float64
+		name              string
+		principalAmount   float64
 		investments       []Investment
 		expectedRemaining float64
 	}{
 		{
-			name:               "No investments",
-			principalAmount:    10000,
-			investments:        []Investment{},
-			expectedRemaining:  10000,
+			name:              "No investments",
+			principalAmount:   10000,
+			investments:       []Investment{},
+			expectedRemaining: 10000,
 		},
 		{
-			name:               "Partial investment",
-			principalAmount:    10000,
+			name:            "Partial investment",
+			principalAmount: 10000,
 			investments: []Investment{
 				{InvestedAmount: 3000},
 				{InvestedAmount: 2000},
 			},
-			expectedRemaining:  5000,
+			expectedRemaining: 5000,
 		},
 		{
-			name:               "Full investment",
-			principalAmount:    10000,
+			name:            "Full investment",
+			principalAmount: 10000,
 			investments: []Investment{
 				{InvestedAmount: 5000},
 				{InvestedAmount: 5000},
 			},
-			expectedRemaining:  0,
+			expectedRemaining: 0,
 		},
 		{
-			name:               "Over investment (edge case)",
-			principalAmount:    10000,
+			name:            "Over investment (edge case)",
+			principalAmount: 10000,
 			investments: []Investment{
 				{InvestedAmount: 6000},
 				{InvestedAmount: 5000},
 			},
-			expectedRemaining:  -1000,
+			expectedRemaining: -1000,
 		},
 	}
 
@@ -234,7 +234,7 @@ func TestUpdateRemainingInvestmentAmount(t *testing.T) {
 			loan.UpdateRemainingInvestmentAmount()
 
 			// Use approximate comparison for floating-point values
-			assert.InDelta(t, tc.expectedRemaining, loan.RemainingInvestmentAmount, 0.01, 
+			assert.InDelta(t, tc.expectedRemaining, loan.RemainingInvestmentAmount, 0.01,
 				"Remaining investment amount should be updated correctly")
 		})
 	}
@@ -242,40 +242,40 @@ func TestUpdateRemainingInvestmentAmount(t *testing.T) {
 
 func TestSetStatusToInvested(t *testing.T) {
 	testCases := []struct {
-		name                     string
-		initialState             string
+		name                      string
+		initialState              string
 		remainingInvestmentAmount float64
-		expectedState            string
+		expectedState             string
 	}{
 		{
-			name:                     "Fully invested loan changes state",
-			initialState:             "proposed",
+			name:                      "Fully invested loan changes state",
+			initialState:              "proposed",
 			remainingInvestmentAmount: 0,
-			expectedState:            "invested",
+			expectedState:             "invested",
 		},
 		{
-			name:                     "Partially invested loan does not change state",
-			initialState:             "proposed",
+			name:                      "Partially invested loan does not change state",
+			initialState:              "proposed",
 			remainingInvestmentAmount: 1000,
-			expectedState:            "proposed",
+			expectedState:             "proposed",
 		},
 		{
-			name:                     "Already invested loan remains invested",
-			initialState:             "invested",
+			name:                      "Already invested loan remains invested",
+			initialState:              "invested",
 			remainingInvestmentAmount: 0,
-			expectedState:            "invested",
+			expectedState:             "invested",
 		},
 		{
-			name:                     "Loan with negative remaining amount does not change state",
-			initialState:             "proposed",
+			name:                      "Loan with negative remaining amount does not change state",
+			initialState:              "proposed",
 			remainingInvestmentAmount: -500,
-			expectedState:            "proposed",
+			expectedState:             "proposed",
 		},
 		{
-			name:                     "Loan with zero point zero remaining amount changes state",
-			initialState:             "proposed",
+			name:                      "Loan with zero point zero remaining amount changes state",
+			initialState:              "proposed",
 			remainingInvestmentAmount: 0.0,
-			expectedState:            "invested",
+			expectedState:             "invested",
 		},
 	}
 
@@ -290,7 +290,7 @@ func TestSetStatusToInvested(t *testing.T) {
 			loan.SetStatusToInvested()
 
 			// Assert the final state
-			assert.Equal(t, tc.expectedState, loan.State, 
+			assert.Equal(t, tc.expectedState, loan.State,
 				"Loan state should be updated correctly based on remaining investment amount")
 		})
 	}
@@ -298,19 +298,19 @@ func TestSetStatusToInvested(t *testing.T) {
 
 func TestSetStateToProposed(t *testing.T) {
 	testCases := []struct {
-		name           string
-		initialState   string
-		expectedState  string
+		name          string
+		initialState  string
+		expectedState string
 	}{
 		{
-			name:           "Set state to proposed from empty state",
-			initialState:   "",
-			expectedState:  "proposed",
+			name:          "Set state to proposed from empty state",
+			initialState:  "",
+			expectedState: "proposed",
 		},
 		{
-			name:           "Set state to proposed from different state",
-			initialState:   "approved",
-			expectedState:  "proposed",
+			name:          "Set state to proposed from different state",
+			initialState:  "approved",
+			expectedState: "proposed",
 		},
 	}
 

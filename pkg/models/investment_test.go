@@ -8,40 +8,40 @@ import (
 
 func TestCalculateROI(t *testing.T) {
 	testCases := []struct {
-		name            string
-		investedAmount  float64
-		loanRate        float64
-		expectedROI     float64
+		name           string
+		investedAmount float64
+		loanRate       float64
+		expectedROI    float64
 	}{
 		{
-			name:            "Basic ROI calculation",
-			investedAmount:  10000,
-			loanRate:        10,
-			expectedROI:     1000,
+			name:           "Basic ROI calculation",
+			investedAmount: 10000,
+			loanRate:       10,
+			expectedROI:    1000,
 		},
 		{
-			name:            "Zero invested amount",
-			investedAmount:  0,
-			loanRate:        15,
-			expectedROI:     0,
+			name:           "Zero invested amount",
+			investedAmount: 0,
+			loanRate:       15,
+			expectedROI:    0,
 		},
 		{
-			name:            "Zero loan rate",
-			investedAmount:  5000,
-			loanRate:        0,
-			expectedROI:     0,
+			name:           "Zero loan rate",
+			investedAmount: 5000,
+			loanRate:       0,
+			expectedROI:    0,
 		},
 		{
-			name:            "Fractional invested amount",
-			investedAmount:  7500.50,
-			loanRate:        12.5,
-			expectedROI:     937.5625,
+			name:           "Fractional invested amount",
+			investedAmount: 7500.50,
+			loanRate:       12.5,
+			expectedROI:    937.5625,
 		},
 		{
-			name:            "Negative loan rate",
-			investedAmount:  10000,
-			loanRate:        -5,
-			expectedROI:     -500,
+			name:           "Negative loan rate",
+			investedAmount: 10000,
+			loanRate:       -5,
+			expectedROI:    -500,
 		},
 	}
 
@@ -62,7 +62,7 @@ func TestCalculateROI(t *testing.T) {
 			roi := investment.CalculateROI()
 
 			// Use InDelta for floating-point comparison
-			assert.InDelta(t, tc.expectedROI, roi, 0.0001, 
+			assert.InDelta(t, tc.expectedROI, roi, 0.0001,
 				"ROI calculation should be accurate")
 		})
 	}
@@ -70,40 +70,40 @@ func TestCalculateROI(t *testing.T) {
 
 func TestUpdateROI(t *testing.T) {
 	testCases := []struct {
-		name            string
-		investedAmount  float64
-		loanRate        float64
-		expectedROI     float64
+		name           string
+		investedAmount float64
+		loanRate       float64
+		expectedROI    float64
 	}{
 		{
-			name:            "Basic ROI update",
-			investedAmount:  10000,
-			loanRate:        10,
-			expectedROI:     1000,
+			name:           "Basic ROI update",
+			investedAmount: 10000,
+			loanRate:       10,
+			expectedROI:    1000,
 		},
 		{
-			name:            "Zero invested amount",
-			investedAmount:  0,
-			loanRate:        15,
-			expectedROI:     0,
+			name:           "Zero invested amount",
+			investedAmount: 0,
+			loanRate:       15,
+			expectedROI:    0,
 		},
 		{
-			name:            "Zero loan rate",
-			investedAmount:  5000,
-			loanRate:        0,
-			expectedROI:     0,
+			name:           "Zero loan rate",
+			investedAmount: 5000,
+			loanRate:       0,
+			expectedROI:    0,
 		},
 		{
-			name:            "Fractional invested amount",
-			investedAmount:  7500.50,
-			loanRate:        12.5,
-			expectedROI:     937.5625,
+			name:           "Fractional invested amount",
+			investedAmount: 7500.50,
+			loanRate:       12.5,
+			expectedROI:    937.5625,
 		},
 		{
-			name:            "Negative loan rate",
-			investedAmount:  10000,
-			loanRate:        -5,
-			expectedROI:     -500,
+			name:           "Negative loan rate",
+			investedAmount: 10000,
+			loanRate:       -5,
+			expectedROI:    -500,
 		},
 	}
 
@@ -125,7 +125,7 @@ func TestUpdateROI(t *testing.T) {
 			investment.UpdateROI()
 
 			// Use InDelta for floating-point comparison
-			assert.InDelta(t, tc.expectedROI, investment.ROI, 0.0001, 
+			assert.InDelta(t, tc.expectedROI, investment.ROI, 0.0001,
 				"ROI should be updated correctly")
 		})
 	}
