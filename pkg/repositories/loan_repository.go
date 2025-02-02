@@ -14,7 +14,7 @@ type loanRepository struct {
 }
 
 // NewLoanRepository creates a new instance of LoanRepository
-func NewLoanRepository(db *gorm.DB) *loanRepository {
+func NewLoanRepository(db *gorm.DB) LoanRepository {
 	return &loanRepository{
 		db: db,
 	}
@@ -23,6 +23,8 @@ func NewLoanRepository(db *gorm.DB) *loanRepository {
 type LoanRepository interface {
 	Create(db *gorm.DB, loan *models.Loan) error
 	SetStateToApproved(db *gorm.DB, id uint, approvedBy uint, visitProof string) error
+	SetStateToDisbursed(db *gorm.DB, id uint, disbursedBy uint) error
+	GetByID(db *gorm.DB, id uint) (*models.Loan, error)
 }
 
 // Create inserts a new loan into the database
@@ -71,6 +73,33 @@ func (r *loanRepository) SetStateToApproved(db *gorm.DB, id uint, approvedBy uin
 
 	if err := db.Save(loan).Error; err != nil {
 		return fmt.Errorf("failed to update loan state to approved: %w", err)
+	}
+
+	return nil
+}
+
+// Set state to disbursed if remaining investment amount is 0
+func (r *loanRepository) SetStateToDisbursed(db *gorm.DB, id uint, disbursedBy uint) error {
+	// Get the loan by id
+	loan := &models.Loan{}
+	if err := db.Where("id = ?", id).First(loan).Error; err != nil {
+		return fmt.Errorf("failed to find loan with id %d: %w", id, err)
+	}
+
+	// Return error if the loan state is not approved
+	if loan.State != models.LoanStatusInvested {
+		return fmt.Errorf("loan with id %d is not in invested state", id)
+	}
+
+	// Set the state to disbursed
+	loan.State = models.LoanStatusDisbursed
+	disbursedByStr := disbursedBy
+	loan.DisbursedBy = &disbursedByStr
+	now := time.Now()
+	loan.DisbursedAt = &now
+
+	if err := db.Save(loan).Error; err != nil {
+		return fmt.Errorf("failed to update loan state to disbursed: %w", err)
 	}
 
 	return nil

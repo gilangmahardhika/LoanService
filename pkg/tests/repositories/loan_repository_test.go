@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 
 	"github.com/amartha/LoanService/pkg/models"
 	"github.com/amartha/LoanService/pkg/repositories"
@@ -311,6 +312,34 @@ func TestLoanRepository_CreateErrorScenarios(t *testing.T) {
 	}
 }
 
+func prepareLoanForDisbursal(db *gorm.DB, loan *models.Loan) error {
+	// Simulate adding investments to the loan to prepare it for disbursement
+	investmentRepo := repositories.NewInvestmentRepository(db)
+
+	// Create multiple investments to fully fund the loan
+	investments := []*models.Investment{
+		{
+			LoanID:         loan.ID,
+			InvestorID:     129,
+			InvestedAmount: 500000,
+		},
+		{
+			LoanID:         loan.ID,
+			InvestorID:     130,
+			InvestedAmount: 500000,
+		},
+	}
+
+	for _, investment := range investments {
+		err := investmentRepo.Create(db, investment)
+		if err != nil {
+			return fmt.Errorf("failed to create investment for loan: %v", err)
+		}
+	}
+
+	return nil
+}
+
 func TestLoanRepository_SetStateToApproved(t *testing.T) {
 	// Setup test database
 	db := testutils.SetupTestDB(t)
@@ -383,5 +412,73 @@ func TestLoanRepository_SetStateToApproved(t *testing.T) {
 		err := loanRepo.SetStateToApproved(db, 9999, approverID, visitProof)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "record not found")
+	})
+}
+
+func TestLoanRepository_SetStateToDisbursed(t *testing.T) {
+	// Setup test database
+	db := testutils.SetupTestDB(t)
+	defer testutils.TruncateTable(t, db)
+
+	// Create a loan repository
+	loanRepo := repositories.NewLoanRepository(db)
+
+	t.Run("Successfully set loan state to disbursed", func(t *testing.T) {
+		// Create an approved loan
+		loan := &models.Loan{
+			State:            models.LoanStatusApproved,
+			PrincipalAmount:  1000000,
+			BorrowerIDNumber: "98745",
+			Rate:             5.5,
+		}
+		err := loanRepo.Create(db, loan)
+		require.NoError(t, err)
+
+		err = prepareLoanForInvestment(db, loan)
+		require.NoError(t, err)
+
+		err = prepareLoanForDisbursal(db, loan)
+		require.NoError(t, err)
+
+		// Set state to disbursed
+		disbursedBy := uint(147)
+		err = loanRepo.SetStateToDisbursed(db, loan.ID, disbursedBy)
+		require.NoError(t, err)
+
+		// Retrieve the updated loan
+		updatedLoan, err := loanRepo.GetByID(db, loan.ID)
+		require.NoError(t, err)
+
+		// Assert loan state and details
+		assert.Equal(t, models.LoanStatusDisbursed, updatedLoan.State)
+		assert.Equal(t, &disbursedBy, updatedLoan.DisbursedBy)
+		assert.NotNil(t, updatedLoan.DisbursedAt)
+	})
+
+	t.Run("Error when loan is not in invested state", func(t *testing.T) {
+		// Create a loan in a different state
+		loan := &models.Loan{
+			State:            models.LoanStatusProposed,
+			PrincipalAmount:  1000000,
+			BorrowerIDNumber: "98745",
+			Rate:             5.5,
+		}
+		err := loanRepo.Create(db, loan)
+		require.NoError(t, err)
+
+		// Attempt to set state to disbursed
+		disbursedBy := uint(2)
+		err = loanRepo.SetStateToDisbursed(db, loan.ID, disbursedBy)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "is not in invested state")
+	})
+
+	t.Run("Error when loan does not exist", func(t *testing.T) {
+		// Try to set state for a non-existent loan
+		nonExistentLoanID := uint(9999)
+		disbursedBy := uint(3)
+		err := loanRepo.SetStateToDisbursed(db, nonExistentLoanID, disbursedBy)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to find loan")
 	})
 }

@@ -32,7 +32,7 @@ type Loan struct {
 	ApprovedBy                *uint        `gorm:"default:null" json:"approved_by"`
 	VisitProof                *string      `gorm:"default:null" json:"visit_proof"`
 	DisbursedAt               *time.Time   `gorm:"default:null" json:"disbursed_at"`
-	DisbursedBy               *string      `gorm:"default:null" json:"disbursed_by"`
+	DisbursedBy               *uint        `gorm:"default:null" json:"disbursed_by"`
 	CreatedAt                 time.Time    `gorm:"not null;autoCreateTime" json:"created_at"`
 	UpdatedAt                 time.Time    `gorm:"not null;autoUpdateTime" json:"updated_at"`
 }
