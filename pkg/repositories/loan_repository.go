@@ -1,6 +1,9 @@
 package repositories
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/amartha/LoanService/pkg/models"
 	"gorm.io/gorm"
 )
@@ -31,6 +34,40 @@ func (r *loanRepository) Create(db *gorm.DB, loan *models.Loan) error {
 
 	// Create a new loan using model struct
 	if err := db.Create(&loan).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *loanRepository) GetByID(db *gorm.DB, id uint) (*models.Loan, error) {
+	var loan models.Loan
+	if err := db.Where("id = ?", id).First(&loan).Error; err != nil {
+		return nil, err
+	}
+	return &loan, nil
+}
+
+// Function for set the state to approved after the loan is approved
+func (r *loanRepository) SetStateToApproved(db *gorm.DB, id uint, approvedBy uint, visitProof string) error {
+	// If the loan is already approved, return an error
+	// Get the loan by id
+	loan := &models.Loan{}
+	if err := db.Where("id = ?", id).First(loan).Error; err != nil {
+		return err
+	}
+
+	if loan.State == "approved" {
+		return fmt.Errorf("loan with id %d is already approved", id)
+	}
+
+	// Update the loan state to approved
+	loan.State = "approved"
+	loan.ApprovedBy = &approvedBy
+	loan.VisitProof = &visitProof
+	loan.ApprovedAt = &[]time.Time{time.Now()}[0]
+
+	if err := db.Save(loan).Error; err != nil {
 		return err
 	}
 

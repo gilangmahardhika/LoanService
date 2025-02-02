@@ -20,7 +20,7 @@ type Loan struct {
 	State                     string       `gorm:"not null;default:'proposed'" json:"state"`
 	Investments               []Investment `gorm:"foreignKey:LoanID" json:"investments,omitempty"`
 	ApprovedAt                *time.Time   `gorm:"default:null" json:"approved_at"`
-	ApprovedBy                *string      `gorm:"default:null" json:"approved_by"`
+	ApprovedBy                *uint        `gorm:"default:null" json:"approved_by"`
 	VisitProof                *string      `gorm:"default:null" json:"visit_proof"`
 	DisbursedAt               *time.Time   `gorm:"default:null" json:"disbursed_at"`
 	DisbursedBy               *string      `gorm:"default:null" json:"disbursed_by"`
