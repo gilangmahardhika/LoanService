@@ -12,17 +12,18 @@ type Loan struct {
 	ID                        uint         `gorm:"not null;primary_key" json:"id"`
 	BorrowerIDNumber          string       `gorm:"not null" json:"borrower_id_number"`
 	PrincipalAmount           float64      `gorm:"not null" json:"principal_amount"`
-	Rate                      float64      `gorm:"not null" json:"rate"`
-	RemainingInvestmentAmount float64      `gorm:"not null" json:"remaining_investment_amount"`
-	AgreementLink             string       `gorm:"not null" json:"agreement_link"`
+	Rate                      float64      `gorm:"not null;" json:"rate"`
+	RemainingInvestmentAmount float64      `gorm:"not null;default:0" json:"remaining_investment_amount"`
+	AgreementLink             *string      `gorm:"default:null" json:"agreement_link"`
 	State                     string       `gorm:"not null;default:'proposed'" json:"state"`
 	Investments               []Investment `gorm:"foreignKey:LoanID" json:"investments,omitempty"`
 	ApprovedAt                *time.Time   `gorm:"not null;default:null" json:"approved_at"`
 	ApprovedBy                *string      `gorm:"not null;default:null" json:"approved_by"`
+	VisitProof                *string      `gorm:"not null;default:null" json:"visit_proof"`
 	DisbursedAt               *time.Time   `gorm:"not null;default:null" json:"disbursed_at"`
 	DisbursedBy               *string      `gorm:"not null;default:null" json:"disbursed_by"`
-	CreatedAt                 time.Time    `gorm:"not null" json:"created_at"`
-	UpdatedAt                 time.Time    `gorm:"not null" json:"updated_at"`
+	CreatedAt                 time.Time    `gorm:"not null;autoCreateTime" json:"created_at"`
+	UpdatedAt                 time.Time    `gorm:"not null;autoUpdateTime" json:"updated_at"`
 }
 
 // function for calculation remaining investment amount
@@ -52,15 +53,15 @@ func (l *Loan) SetStatusToInvested() {
 // Validate loan state before saving
 func (l *Loan) BeforeSave(tx *gorm.DB) error {
 	validStates := map[string]bool{
-		"proposed":   true,
-		"approved":   true,
-		"invested":   true,
-		"disbursed":  true,
+		"proposed":  true,
+		"approved":  true,
+		"invested":  true,
+		"disbursed": true,
 	}
 
 	if !validStates[l.State] {
 		return fmt.Errorf(
-			"invalid state '%s', must be one of: proposed, approved, invested, disbursed", 
+			"invalid state '%s', must be one of: proposed, approved, invested, disbursed",
 			l.State)
 	}
 	return nil

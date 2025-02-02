@@ -13,8 +13,8 @@ type Investment struct {
 	InvestorID     string    `gorm:"not null" json:"investor_id"`
 	InvestedAmount float64   `gorm:"not null" json:"invested_amount"`
 	ROI            float64   `gorm:"not null" json:"roi"`
-	CreatedAt      time.Time `gorm:"not null" json:"created_at"`
-	UpdatedAt      time.Time `gorm:"not null" json:"updated_at"`
+	CreatedAt      time.Time `gorm:"not null;autoCreateTime" json:"created_at"`
+	UpdatedAt      time.Time `gorm:"not null;autoUpdateTime" json:"updated_at"`
 }
 
 // Function for calculating the ROI
