@@ -10,6 +10,8 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"github.com/amartha/LoanService/pkg/models"
 )
 
 var (
@@ -41,6 +43,13 @@ func InitDatabase() (*gorm.DB, error) {
 
 		if err != nil {
 			log.Printf("Failed to connect to database: %v", err)
+			return
+		}
+
+		// Auto-migrate Investment and Loan models
+		err = db.AutoMigrate(&models.Investment{}, &models.Loan{})
+		if err != nil {
+			log.Printf("Failed to auto-migrate models: %v", err)
 			return
 		}
 

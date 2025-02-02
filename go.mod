@@ -1,4 +1,4 @@
-module loanservice
+module github.com/amartha/LoanService
 
 go 1.21
 
