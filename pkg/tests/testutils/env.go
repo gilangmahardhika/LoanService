@@ -15,7 +15,7 @@ func GetDatabaseURL(envVarName string, defaultURL string) string {
 	if err != nil {
 		projectRoot = "."
 	}
-	projectRoot = filepath.Join(projectRoot, "..", "..")
+	projectRoot = filepath.Join(projectRoot, "..", "..", "..")
 
 	// Load .env file (ignore errors if file doesn't exist)
 	_ = godotenv.Load(filepath.Join(projectRoot, ".env"))
