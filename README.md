@@ -1,5 +1,7 @@
 # LoanService
 
+[![codecov](https://codecov.io/gh/gilangmahardhika/LoanService/graph/badge.svg?token=MRVH02QJU3)](https://codecov.io/gh/gilangmahardhika/LoanService)
+
 A Go Fiber-based microservice for loan-related operations.
 
 ## Prerequisites

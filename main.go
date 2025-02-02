@@ -10,7 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/joho/godotenv"
 
-	"loanservice/pkg/database"
+	"github.com/amartha/LoanService/pkg/database"
 )
 
 func main() {
