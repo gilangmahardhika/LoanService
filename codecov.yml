@@ -1,0 +1,23 @@
+coverage:
+  status:
+    project:
+      default:
+        # basic
+        target: auto
+        threshold: 1%
+    patch:
+      default:
+        target: auto
+        threshold: 1%
+
+  ignore:
+    - "main.go"
+    - "pkg/database/*"
+    - "**/*.pb.go"  # Ignore generated protobuf files
+    - "**/*_mock.go"  # Ignore mock files
+    - "**/mock_*.go"  # Another pattern for mock files
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false
