@@ -23,7 +23,7 @@ func (i Investment) CalculateROI() float64 {
 }
 
 // Function for updating the ROI
-func (i Investment) UpdateROI() {
+func (i *Investment) UpdateROI() {
 	i.ROI = i.CalculateROI()
 }
 
