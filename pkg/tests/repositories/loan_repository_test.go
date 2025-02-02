@@ -3,6 +3,7 @@ package repositories
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -13,7 +14,7 @@ import (
 
 	"github.com/amartha/LoanService/pkg/models"
 	"github.com/amartha/LoanService/pkg/repositories"
-	"github.com/amartha/LoanService/pkg/testutils"
+	"github.com/amartha/LoanService/pkg/tests/testutils"
 )
 
 func setupTestDB(t *testing.T) *gorm.DB {
@@ -44,6 +45,8 @@ func TestLoanRepository_Create(t *testing.T) {
 	// Setup in-memory test database
 	db := setupTestDB(t)
 
+	defer truncateLoansTable(t, db)
+
 	// Create a repository instance
 	repo := repositories.NewLoanRepository(db)
 
@@ -68,14 +71,13 @@ func TestLoanRepository_Create(t *testing.T) {
 	assert.NoError(t, result.Error, "Should be able to retrieve the saved loan")
 	assert.Equal(t, testLoan.BorrowerIDNumber, savedLoan.BorrowerIDNumber, "Saved loan should match the original loan's borrower ID")
 	assert.Equal(t, "proposed", savedLoan.State, "Saved loan should have 'proposed' status")
-
-	// Truncate the table after each test
-	truncateLoansTable(t, db)
 }
 
 func TestLoanRepository_CreateWithExistingStatus(t *testing.T) {
 	// Setup in-memory test database
 	db := setupTestDB(t)
+
+	defer truncateLoansTable(t, db)
 
 	// Create a repository instance
 	repo := repositories.NewLoanRepository(db)
@@ -101,14 +103,14 @@ func TestLoanRepository_CreateWithExistingStatus(t *testing.T) {
 	result := db.First(&savedLoan, testLoan.ID)
 	assert.NoError(t, result.Error, "Should be able to retrieve the saved loan")
 	assert.Equal(t, "proposed", savedLoan.State, "Saved loan should have 'proposed' status")
-
-	// Truncate the table after each test
-	truncateLoansTable(t, db)
 }
 
 func TestLoanRepository_CreateWithDifferentStatus(t *testing.T) {
 	// Setup in-memory test database
 	db := setupTestDB(t)
+
+	// Truncate the table after each test
+	defer truncateLoansTable(t, db)
 
 	// Create a repository instance
 	repo := repositories.NewLoanRepository(db)
@@ -167,6 +169,10 @@ func TestLoanRepository_CreateWithDifferentStatus(t *testing.T) {
 }
 
 func TestLoanRepository_CreateRemainingInvestmentAmount(t *testing.T) {
+	// Setup in-memory test database
+	db := setupTestDB(t)
+	// Truncate the table after each test
+	defer truncateLoansTable(t, db)
 	// Test cases with different principal amounts
 	testCases := []struct {
 		name            string
@@ -188,8 +194,6 @@ func TestLoanRepository_CreateRemainingInvestmentAmount(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Setup in-memory test database
-			db := setupTestDB(t)
 
 			// Create a repository instance
 			repo := repositories.NewLoanRepository(db)
@@ -220,9 +224,6 @@ func TestLoanRepository_CreateRemainingInvestmentAmount(t *testing.T) {
 			assert.NoError(t, result.Error, "Should be able to retrieve the saved loan")
 			assert.Equal(t, tc.principalAmount, savedLoan.RemainingInvestmentAmount,
 				"Saved loan's remaining investment amount should be equal to principal amount")
-
-			// Truncate the table after each test
-			truncateLoansTable(t, db)
 		})
 	}
 }
@@ -230,6 +231,8 @@ func TestLoanRepository_CreateRemainingInvestmentAmount(t *testing.T) {
 func TestLoanRepository_CreateErrorScenarios(t *testing.T) {
 	// Setup in-memory test database
 	db := setupTestDB(t)
+	// Truncate the table after each test
+	defer truncateLoansTable(t, db)
 
 	// Create a repository instance
 	repo := repositories.NewLoanRepository(db)
@@ -331,9 +334,81 @@ func TestLoanRepository_CreateErrorScenarios(t *testing.T) {
 				assert.NoError(t, result.Error, "Should be able to retrieve the saved loan")
 				assert.Equal(t, tc.loan.BorrowerIDNumber, savedLoan.BorrowerIDNumber, "Saved loan should match the original loan")
 			}
-
-			// Truncate the table after each test
-			truncateLoansTable(t, db)
 		})
 	}
+}
+
+func TestLoanRepository_SetStateToApproved(t *testing.T) {
+	// Setup test database
+	db := setupTestDB(t)
+	defer truncateLoansTable(t, db)
+
+	// Create a loan repository
+	loanRepo := repositories.NewLoanRepository(db)
+
+	// Test case 1: Successfully approve a proposed loan
+	t.Run("Approve Proposed Loan", func(t *testing.T) {
+		// Create a proposed loan
+		loan := &models.Loan{
+			BorrowerIDNumber: "32123",
+			PrincipalAmount:  10000.0,
+			State:            "proposed",
+			Rate:             5.5,
+		}
+		err := loanRepo.Create(db, loan)
+		require.NoError(t, err)
+
+		// Approve the loan
+		approverID := uint(1)
+		visitProof := "visit_proof.jpg"
+		err = loanRepo.SetStateToApproved(db, loan.ID, approverID, visitProof)
+		require.NoError(t, err)
+
+		// Retrieve the updated loan
+		updatedLoan := &models.Loan{}
+		err = db.Where("id = ?", loan.ID).First(updatedLoan).Error
+		require.NoError(t, err)
+
+		// Assertions
+		assert.Equal(t, "approved", updatedLoan.State)
+		assert.Equal(t, &approverID, updatedLoan.ApprovedBy)
+		assert.Equal(t, &visitProof, updatedLoan.VisitProof)
+		assert.NotNil(t, updatedLoan.ApprovedAt)
+	})
+
+	// Test case 2: Attempt to approve an already approved loan
+	t.Run("Approve Already Approved Loan", func(t *testing.T) {
+		// Create an already approved loan
+		loan := &models.Loan{
+			BorrowerIDNumber: "67890",
+			PrincipalAmount:  20000.0,
+			ApprovedBy:       &[]uint{1}[0],
+			VisitProof:       &[]string{"visit_proof.jpg"}[0],
+			ApprovedAt:       &[]time.Time{time.Now()}[0],
+			Rate:             5.5,
+		}
+		err := loanRepo.Create(db, loan)
+		require.NoError(t, err)
+
+		// Set loan state to approved
+		loan.State = "approved"
+		err = db.Save(loan).Error
+		require.NoError(t, err)
+
+		// Attempt to approve the already approved loan
+		approverID := uint(2)
+		visitProof := "another_proof.jpg"
+		err = loanRepo.SetStateToApproved(db, loan.ID, approverID, visitProof)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "is not in proposed state")
+	})
+
+	// Test case 3: Attempt to approve a non-existent loan
+	t.Run("Approve Non-Existent Loan", func(t *testing.T) {
+		approverID := uint(3)
+		visitProof := "non_existent_proof.jpg"
+		err := loanRepo.SetStateToApproved(db, 9999, approverID, visitProof)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "record not found")
+	})
 }
