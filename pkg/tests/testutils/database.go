@@ -1,4 +1,4 @@
-package testutils
+package repositories_test
 
 import (
 	"testing"

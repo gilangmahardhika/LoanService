@@ -12,28 +12,28 @@ import (
 func TestBeforeSave(t *testing.T) {
 	testCases := []struct {
 		name          string
-		state         string
+		state         models.LoanStatus
 		expectedError bool
 		errorMessage  string
 	}{
 		{
 			name:          "Valid state: proposed",
-			state:         "proposed",
+			state:         models.LoanStatusProposed,
 			expectedError: false,
 		},
 		{
 			name:          "Valid state: approved",
-			state:         "approved",
+			state:         models.LoanStatusApproved,
 			expectedError: false,
 		},
 		{
 			name:          "Valid state: invested",
-			state:         "invested",
+			state:         models.LoanStatusInvested,
 			expectedError: false,
 		},
 		{
 			name:          "Valid state: disbursed",
-			state:         "disbursed",
+			state:         models.LoanStatusDisbursed,
 			expectedError: false,
 		},
 		{
@@ -200,77 +200,21 @@ func TestUpdateRemainingInvestmentAmount(t *testing.T) {
 	}
 }
 
-func TestSetStatusToInvested(t *testing.T) {
-	testCases := []struct {
-		name                      string
-		initialState              string
-		remainingInvestmentAmount float64
-		expectedState             string
-	}{
-		{
-			name:                      "Fully invested loan changes state",
-			initialState:              "proposed",
-			remainingInvestmentAmount: 0,
-			expectedState:             "invested",
-		},
-		{
-			name:                      "Partially invested loan does not change state",
-			initialState:              "proposed",
-			remainingInvestmentAmount: 1000,
-			expectedState:             "proposed",
-		},
-		{
-			name:                      "Already invested loan remains invested",
-			initialState:              "invested",
-			remainingInvestmentAmount: 0,
-			expectedState:             "invested",
-		},
-		{
-			name:                      "Loan with negative remaining amount does not change state",
-			initialState:              "proposed",
-			remainingInvestmentAmount: -500,
-			expectedState:             "proposed",
-		},
-		{
-			name:                      "Loan with zero point zero remaining amount changes state",
-			initialState:              "proposed",
-			remainingInvestmentAmount: 0.0,
-			expectedState:             "invested",
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			loan := models.Loan{
-				State:                     tc.initialState,
-				RemainingInvestmentAmount: tc.remainingInvestmentAmount,
-			}
-
-			// Call the method to potentially change state
-			loan.SetStatusToInvested()
-
-			// Assert the final state
-			assert.Equal(t, tc.expectedState, loan.State,
-				"Loan state should be updated correctly based on remaining investment amount")
-		})
-	}
-}
-
 func TestSetStateToProposed(t *testing.T) {
 	testCases := []struct {
 		name          string
-		initialState  string
-		expectedState string
+		initialState  models.LoanStatus
+		expectedState models.LoanStatus
 	}{
 		{
 			name:          "Set state to proposed from empty state",
 			initialState:  "",
-			expectedState: "proposed",
+			expectedState: models.LoanStatusProposed,
 		},
 		{
 			name:          "Set state to proposed from different state",
-			initialState:  "approved",
-			expectedState: "proposed",
+			initialState:  models.LoanStatusApproved,
+			expectedState: models.LoanStatusProposed,
 		},
 	}
 
@@ -285,9 +229,4 @@ func TestSetStateToProposed(t *testing.T) {
 			assert.Equal(t, tc.expectedState, loan.State, "Loan state should be set to proposed")
 		})
 	}
-}
-
-// Helper function to create a pointer to a string
-func stringPtr(s string) *string {
-	return &s
 }

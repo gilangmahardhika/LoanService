@@ -4,7 +4,6 @@ package models
 import (
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -14,7 +13,7 @@ type Investment struct {
 	ID             uint      `gorm:"not null;primary_key" json:"id"`
 	LoanID         uint      `gorm:"not null" json:"loan_id"`
 	Loan           Loan      `gorm:"foreignKey:LoanID" json:"loan,omitempty"`
-	InvestorID     int       `gorm:"not null" json:"investor_id"`
+	InvestorID     uint      `gorm:"not null" json:"investor_id"`
 	InvestedAmount float64   `gorm:"not null" json:"invested_amount"`
 	ROI            float64   `gorm:"not null" json:"roi"`
 	CreatedAt      time.Time `gorm:"not null;autoCreateTime" json:"created_at"`
@@ -54,7 +53,7 @@ func (i Investment) BeforeCreate(tx *gorm.DB) error {
 		return fmt.Errorf("LoanID cannot be empty")
 	}
 
-	if strings.TrimSpace(strconv.Itoa(i.InvestorID)) == "" {
+	if i.InvestorID == 0 {
 		return fmt.Errorf("InvestorID cannot be empty")
 	}
 

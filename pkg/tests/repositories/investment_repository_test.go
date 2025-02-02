@@ -5,7 +5,9 @@ import (
 
 	"github.com/amartha/LoanService/pkg/models"
 	"github.com/amartha/LoanService/pkg/repositories"
-	"github.com/amartha/LoanService/pkg/tests/testutils"
+	testutils "github.com/amartha/LoanService/pkg/tests/testutils"
+	"gorm.io/gorm"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -25,7 +27,7 @@ func TestInvestmentRepositoryCreate(t *testing.T) {
 		Rate:                      10.0,
 		RemainingInvestmentAmount: 10000.0,
 		PrincipalAmount:           10000.0,
-		State:                     "proposed",
+		State:                     models.LoanStatusProposed,
 	}
 
 	// First, create the loan in the database
@@ -33,13 +35,8 @@ func TestInvestmentRepositoryCreate(t *testing.T) {
 	require.NoError(t, err, "Failed to create test loan")
 
 	loanID := loan.ID
-	loan.State = "approved"
-	approvedBy := uint(21)
-	loan.ApprovedBy = &approvedBy
-	visitProof := "visit_proof"
-	loan.VisitProof = &visitProof
-	err = db.Save(&loan).Error
-	require.NoError(t, err, "Failed to update test loan")
+	err = prepareLoanForInvestment(db, loan)
+	require.NoError(t, err, "Failed to update loan state")
 
 	testCases := []struct {
 		name          string
@@ -106,4 +103,69 @@ func TestInvestmentRepositoryCreate(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Create test for make status == invested
+func TestInvestmentRepository_CreateInvestmentWithLoanStatusInvested(t *testing.T) {
+	// Setup in-memory test database
+	db := testutils.SetupTestDB(t)
+	defer testutils.TruncateTable(t, db)
+
+	// Create repository
+	repo := repositories.NewInvestmentRepository(db)
+
+	// Create loan
+	loan := &models.Loan{
+		BorrowerIDNumber:          "12345",
+		PrincipalAmount:           10000,
+		Rate:                      5.5,
+		RemainingInvestmentAmount: 10000,
+		State:                     models.LoanStatusProposed,
+	}
+
+	err := db.Create(loan).Error
+	require.NoError(t, err, "Failed to create loan")
+
+	err = prepareLoanForInvestment(db, loan)
+	require.NoError(t, err, "Failed to update loan state")
+
+	// Create investment
+	investments := []models.Investment{
+		{
+			LoanID:         loan.ID,
+			InvestorID:     223,
+			InvestedAmount: 5000,
+		},
+		{
+			LoanID:         loan.ID,
+			InvestorID:     221,
+			InvestedAmount: 5000,
+		},
+	}
+
+	for _, investment := range investments {
+		err := repo.Create(db, &investment)
+		require.NoError(t, err, "Failed to create investment")
+	}
+
+	// Update loan status to invested
+	// fetch updated loan
+	reloadedLoan := &models.Loan{}
+	err = db.Preload("Investments").First(reloadedLoan, loan.ID).Error
+	require.NoError(t, err, "Failed to fetch updated loan")
+
+	// Assert
+	assert.Equal(t, 2, len(reloadedLoan.Investments))
+	assert.Equal(t, models.LoanStatusInvested, reloadedLoan.State)
+	assert.Equal(t, float64(0), reloadedLoan.RemainingInvestmentAmount)
+}
+
+func prepareLoanForInvestment(db *gorm.DB, loan *models.Loan) error {
+	loan.State = models.LoanStatusApproved
+	approvedBy := uint(21)
+	loan.ApprovedBy = &approvedBy
+	visitProof := "visit-proof"
+	loan.VisitProof = &visitProof
+
+	return db.Save(loan).Error
 }
