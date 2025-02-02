@@ -296,6 +296,37 @@ func TestSetStatusToInvested(t *testing.T) {
 	}
 }
 
+func TestSetStateToProposed(t *testing.T) {
+	testCases := []struct {
+		name           string
+		initialState   string
+		expectedState  string
+	}{
+		{
+			name:           "Set state to proposed from empty state",
+			initialState:   "",
+			expectedState:  "proposed",
+		},
+		{
+			name:           "Set state to proposed from different state",
+			initialState:   "approved",
+			expectedState:  "proposed",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			loan := &Loan{
+				State: tc.initialState,
+			}
+
+			loan.SetStateToProposed()
+
+			assert.Equal(t, tc.expectedState, loan.State, "Loan state should be set to proposed")
+		})
+	}
+}
+
 // Helper function to create a pointer to a string
 func stringPtr(s string) *string {
 	return &s

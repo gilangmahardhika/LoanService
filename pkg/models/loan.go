@@ -27,6 +27,11 @@ type Loan struct {
 	UpdatedAt                 time.Time    `gorm:"not null;autoUpdateTime" json:"updated_at"`
 }
 
+// Set default state to proposed before creating loan
+func (l *Loan) SetStateToProposed() {
+	l.State = "proposed"
+}
+
 // function for calculation remaining investment amount
 func (l Loan) CalculateRemainingInvestmentAmount() float64 {
 	// Calculate the sum of invested amounts
