@@ -18,7 +18,7 @@ func SetupTestDB(t *testing.T) *gorm.DB {
 	require.NoError(t, err, "Failed to connect to test database: %v", err)
 
 	// Migrate the schema
-	err = db.AutoMigrate(&models.Loan{})
+	err = db.AutoMigrate(&models.Loan{}, &models.Investment{})
 	require.NoError(t, err, "Failed to migrate database schema")
 
 	// Truncate the table before each test
@@ -30,6 +30,6 @@ func SetupTestDB(t *testing.T) *gorm.DB {
 // TruncateTables truncates specified database tables and restarts identity
 func TruncateTable(t *testing.T, db *gorm.DB) {
 	// Truncate the loans and investments tables
-	err := db.Exec("TRUNCATE TABLE loans, investments RESTART IDENTITY").Error
+	err := db.Exec("TRUNCATE TABLE investments, loans RESTART IDENTITY").Error
 	require.NoError(t, err, "Failed to truncate tables")
 }
