@@ -1,5 +1,6 @@
 # LoanService
 
+[![Tests](https://github.com/gilangmahardhika/LoanService/actions/workflows/go-tests.yml/badge.svg)](https://github.com/gilangmahardhika/LoanService/actions/workflows/go-tests.yml)
 [![codecov](https://codecov.io/gh/gilangmahardhika/LoanService/graph/badge.svg?token=MRVH02QJU3)](https://codecov.io/gh/gilangmahardhika/LoanService)
 
 A Go Fiber-based microservice for loan-related operations.
