@@ -35,7 +35,7 @@ func (r *loanRepository) Create(db *gorm.DB, loan *models.Loan) error {
 
 	// Create a new loan using model struct
 	if err := db.Create(&loan).Error; err != nil {
-		return err
+		return fmt.Errorf("failed to create loan: %w", err)
 	}
 
 	return nil
@@ -44,7 +44,7 @@ func (r *loanRepository) Create(db *gorm.DB, loan *models.Loan) error {
 func (r *loanRepository) GetByID(db *gorm.DB, id uint) (*models.Loan, error) {
 	var loan models.Loan
 	if err := db.Where("id = ?", id).First(&loan).Error; err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to retrieve loan with id %d: %w", id, err)
 	}
 	return &loan, nil
 }
@@ -55,7 +55,7 @@ func (r *loanRepository) SetStateToApproved(db *gorm.DB, id uint, approvedBy uin
 	// Get the loan by id
 	loan := &models.Loan{}
 	if err := db.Where("id = ?", id).First(loan).Error; err != nil {
-		return err
+		return fmt.Errorf("failed to find loan with id %d: %w", id, err)
 	}
 
 	// Return error if the loan state is not proposed
@@ -70,7 +70,7 @@ func (r *loanRepository) SetStateToApproved(db *gorm.DB, id uint, approvedBy uin
 	loan.ApprovedAt = &[]time.Time{time.Now()}[0]
 
 	if err := db.Save(loan).Error; err != nil {
-		return err
+		return fmt.Errorf("failed to update loan state to approved: %w", err)
 	}
 
 	return nil

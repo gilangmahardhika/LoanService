@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/amartha/LoanService/pkg/models"
 	"gorm.io/gorm"
@@ -26,12 +25,12 @@ func (r *investmentRepository) Create(db *gorm.DB, investment *models.Investment
 	// find Loan by id
 	loan := &models.Loan{}
 	if err := db.First(&loan, investment.LoanID).Error; err != nil {
-		return err
+		return fmt.Errorf("failed to find loan with id %d: %w", investment.LoanID, err)
 	}
 
 	// Check if investor already invested on this loan
 	if err := r.checkInvestorAlreadyInvested(db, loan.ID, investment.InvestorID); err != nil {
-		return err
+		return fmt.Errorf("failed to check if investor already invested: %w", err)
 	}
 
 	// Can't invest on non approved loan
@@ -41,7 +40,7 @@ func (r *investmentRepository) Create(db *gorm.DB, investment *models.Investment
 
 	// Validate the investment before creating
 	if err := investment.ValidateInvestedAmount(loan); err != nil {
-		return err
+		return fmt.Errorf("failed to validate investment: %w", err)
 	}
 
 	return r.createInvestmentWithTransaction(db, loan, investment)
@@ -69,21 +68,17 @@ func (r *investmentRepository) createInvestmentWithTransaction(db *gorm.DB, loan
 
 	if err := tx.Create(&investment).Error; err != nil {
 		tx.Rollback()
-		return err
+		return fmt.Errorf("failed to create investment: %w", err)
 	}
-
-	log.Printf("Remaining investment amount of Loan after investment: %v", loan.RemainingInvestmentAmount)
-	log.Printf("Investment amount: %v", investment.InvestedAmount)
-	log.Printf("Is loan fully invested: %v", isLoanFullyInvested(loan, investment))
 
 	if err := updateLoan(tx, loan, investment); err != nil {
 		tx.Rollback()
-		return err
+		return fmt.Errorf("failed to update loan: %w", err)
 	}
 
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
-		return err
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	return nil
