@@ -37,6 +37,23 @@ DATABASE_URL=postgresql://localhost:5432/loanservice
 LOG_LEVEL=debug
 ```
 
+## Database Setup
+
+The application uses GORM with PostgreSQL. Ensure you have PostgreSQL installed and create a database for the application.
+
+### Database Connection
+
+Connection details are managed through the `DATABASE_URL` environment variable in the `.env` file. 
+
+Example PostgreSQL connection string:
+```
+DATABASE_URL=postgresql://username:password@localhost:5432/loanservice
+```
+
+### Migrations
+
+Migrations will be added in future updates to manage database schema.
+
 ## Development
 
 - Use `go fmt ./...` to format code
