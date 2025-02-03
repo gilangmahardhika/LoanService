@@ -23,6 +23,9 @@ type Investment struct {
 
 // Function for calculating the ROI
 func (i Investment) CalculateROI() float64 {
+	if i.Loan.Rate == 0 {
+		return 0
+	}
 	return i.InvestedAmount * i.Loan.Rate / 100
 }
 
@@ -44,7 +47,7 @@ func (i Investment) ValidateInvestedAmount(loan *Loan) error {
 
 // Generate link if load set to approved
 func (i *Investment) GenerateLink() {
-	link := "https://example.com/loan/" + strconv.Itoa(int(i.LoanID))
+	link := "https://example.com/loan/" + strconv.Itoa(int(i.ID))
 	i.AgreementLink = &link
 }
 

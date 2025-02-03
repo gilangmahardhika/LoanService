@@ -3,6 +3,7 @@ package repositories
 import (
 	"fmt"
 
+	"github.com/amartha/LoanService/pkg/mailers"
 	"github.com/amartha/LoanService/pkg/models"
 	"gorm.io/gorm"
 )
@@ -38,6 +39,15 @@ func (r *investmentRepository) Create(db *gorm.DB, investment *models.Investment
 		return fmt.Errorf("loan with id %d is not in approved state", loan.ID)
 	}
 
+	// Validate investment amount
+	if !isInvestmentAmountValid(investment, loan) {
+		return fmt.Errorf("invested amount must be more than 0")
+	}
+
+	if isInvestmentAmountBelowRemaining(investment, loan) {
+		return fmt.Errorf("invested amount can't be more than remaining investment amount")
+	}
+
 	// Validate the investment before creating
 	if err := investment.ValidateInvestedAmount(loan); err != nil {
 		return fmt.Errorf("failed to validate investment: %w", err)
@@ -66,6 +76,19 @@ func (r *investmentRepository) createInvestmentWithTransaction(db *gorm.DB, loan
 		}
 	}()
 
+	// Ensure Loan is populated
+	if err := tx.First(&loan, investment.LoanID).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to find loan: %w", err)
+	}
+	investment.Loan = *loan
+
+	// Set ROI
+	investment.UpdateROI()
+
+	// Set agreement link
+	investment.GenerateLink()
+
 	if err := tx.Create(&investment).Error; err != nil {
 		tx.Rollback()
 		return fmt.Errorf("failed to create investment: %w", err)
@@ -81,6 +104,9 @@ func (r *investmentRepository) createInvestmentWithTransaction(db *gorm.DB, loan
 		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
+	// Send agreement email
+	go mailers.SendAgreementEmail()
+
 	return nil
 }
 
@@ -88,6 +114,16 @@ func (r *investmentRepository) createInvestmentWithTransaction(db *gorm.DB, loan
 // matches the current investment amount
 func isLoanFullyInvested(loan *models.Loan, investment *models.Investment) bool {
 	return loan.RemainingInvestmentAmount == investment.InvestedAmount
+}
+
+// isInvestmentAmountValid checks if the investment amount is valid
+func isInvestmentAmountValid(investment *models.Investment, loan *models.Loan) bool {
+	return investment.InvestedAmount > 0
+}
+
+// investment can't be more than remaining investment amount
+func isInvestmentAmountBelowRemaining(investment *models.Investment, loan *models.Loan) bool {
+	return investment.InvestedAmount > loan.CalculateRemainingInvestmentAmount()
 }
 
 // updateLoanToInvested sets the loan status to invested and saves it to the database

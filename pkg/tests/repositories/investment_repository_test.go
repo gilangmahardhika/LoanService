@@ -1,7 +1,6 @@
 package repositories_test
 
 import (
-	"log"
 	"testing"
 
 	"github.com/amartha/LoanService/pkg/models"
@@ -167,8 +166,6 @@ func prepareLoanForInvestment(db *gorm.DB, loan *models.Loan) error {
 	loan.ApprovedBy = &approvedBy
 	visitProof := "visit-proof"
 	loan.VisitProof = &visitProof
-
-	log.Println("State is ", loan.State)
 
 	return db.Save(loan).Error
 }
