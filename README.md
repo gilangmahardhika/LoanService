@@ -108,8 +108,6 @@ API documentation is available at `/docs` when running in development mode.
 The application configuration is managed through:
 
 1. Environment variables (via `.env` file)
-2. Command line flags
-3. Configuration files in `configs/`
 
 Modify `main.go` to adjust server configurations and add more routes as needed.
 
