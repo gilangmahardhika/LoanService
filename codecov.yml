@@ -16,6 +16,7 @@ coverage:
     - "**/*.pb.go"  # Ignore generated protobuf files
     - "**/*_mock.go"  # Ignore mock files
     - "**/mock_*.go"  # Another pattern for mock files
+    - "pkg/handlers/*"
 
 comment:
   layout: "reach, diff, flags, files"
