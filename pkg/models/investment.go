@@ -44,7 +44,7 @@ func (i Investment) ValidateInvestedAmount(loan *Loan) error {
 
 // Generate link if load set to approved
 func (i *Investment) GenerateLink() {
-	link := "https://example.com/loan/" + strconv.Itoa(int(i.LoanID))
+	link := "https://example.com/loan/" + strconv.Itoa(int(i.ID))
 	i.AgreementLink = &link
 }
 
