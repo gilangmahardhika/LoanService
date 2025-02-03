@@ -3,6 +3,7 @@ package repositories
 import (
 	"fmt"
 
+	"github.com/amartha/LoanService/pkg/mailers"
 	"github.com/amartha/LoanService/pkg/models"
 	"gorm.io/gorm"
 )
@@ -75,6 +76,16 @@ func (r *investmentRepository) createInvestmentWithTransaction(db *gorm.DB, loan
 		}
 	}()
 
+	// Ensure Loan is populated
+	if err := tx.First(&loan, investment.LoanID).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to find loan: %w", err)
+	}
+	investment.Loan = *loan
+
+	// Set ROI
+	investment.UpdateROI()
+
 	// Set agreement link
 	investment.GenerateLink()
 
@@ -93,6 +104,9 @@ func (r *investmentRepository) createInvestmentWithTransaction(db *gorm.DB, loan
 		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
+	// Send agreement email
+	go mailers.SendAgreementEmail()
+
 	return nil
 }
 
@@ -109,7 +123,7 @@ func isInvestmentAmountValid(investment *models.Investment, loan *models.Loan) b
 
 // investment can't be more than remaining investment amount
 func isInvestmentAmountBelowRemaining(investment *models.Investment, loan *models.Loan) bool {
-	investment.InvestedAmount <= loan.CalculateRemainingInvestmentAmount()
+	return investment.InvestedAmount > loan.CalculateRemainingInvestmentAmount()
 }
 
 // updateLoanToInvested sets the loan status to invested and saves it to the database

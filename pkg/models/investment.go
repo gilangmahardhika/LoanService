@@ -23,6 +23,9 @@ type Investment struct {
 
 // Function for calculating the ROI
 func (i Investment) CalculateROI() float64 {
+	if i.Loan.Rate == 0 {
+		return 0
+	}
 	return i.InvestedAmount * i.Loan.Rate / 100
 }
 

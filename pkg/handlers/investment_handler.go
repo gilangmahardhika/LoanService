@@ -70,10 +70,12 @@ func (h *InvestmentHandler) Invest(c *fiber.Ctx) error {
 
 	// Return investment details
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message":        "Investment created successfully",
-		"investment_id":  investment.ID,
-		"loan_id":        investment.LoanID,
-		"investor_id":    investment.InvestorID,
+		"message":         "Investment created successfully",
+		"investment_id":   investment.ID,
+		"loan_id":         investment.LoanID,
+		"investor_id":     investment.InvestorID,
 		"invested_amount": investment.InvestedAmount,
+		"agreement_link":  investment.AgreementLink,
+		"roi":             investment.ROI,
 	})
 }
