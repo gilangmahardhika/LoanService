@@ -104,7 +104,7 @@ go run cmd/migrate/main.go
 
 ### API Documentation
 
-API documentation is available at `/swagger/index.html` when running in development mode.
+API documentation is available at `/docs` when running in development mode.
 
 ## Configuration
 
