@@ -9,17 +9,14 @@ A Go Fiber-based microservice for loan and investment operations. This service p
 
 - Investment Management
   - Create and manage investment records
-  - Handle investment agreements and documentation
+  - Handle investment agreements
   - Process investment transactions
 - Loan Processing
   - Loan application handling
   - Loan status management
-  - Payment processing
 - Email Notifications
   - Agreement notifications
-  - Transaction confirmations
-  - Status updates
-
+    
 ## Prerequisites
 
 - Go 1.21+
